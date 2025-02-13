@@ -5,6 +5,7 @@ using QimiaSchool.Business.Implementations.Commands.Students;
 using QimiaSchool.Business.Implementations.Commands.Students.Dtos;
 using QimiaSchool.Business.Implementations.Queries.Student;
 using QimiaSchool.Business.Implementations.Queries.Student.Dtos;
+using Serilog;
 using static QimiaSchool.Business.Implementations.Queries.Student.GetStudentQuery;
 namespace QimiaSchool.Controllers;
 
@@ -16,20 +17,27 @@ namespace QimiaSchool.Controllers;
 public class StudentsController : Controller
 {
     private readonly IMediator _mediator;
+    private readonly Serilog.ILogger _studentLogger;
     public StudentsController(IMediator mediator)
     {
         _mediator = mediator;
+        _studentLogger = Log.ForContext("SourceContext", typeof(StudentsController).FullName);
     }
     [HttpPost]
     public async Task<ActionResult> CreateStudent(
     [FromBody] CreateStudentDto student,
     CancellationToken cancellationToken)
     {
+        _studentLogger.Information(
+            "Create student request is accepted. Student: {@student}",
+            student
+        );
         var response = await _mediator.Send(new CreateStudentCommand(student), cancellationToken);
         return CreatedAtAction(
         nameof(GetStudent),
         new { Id = response },
         student);
+
     }
     [HttpGet("{id}")]
     public Task<StudentDto> GetStudent(

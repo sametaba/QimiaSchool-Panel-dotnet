@@ -3,6 +3,7 @@ using NUnit.Framework;
 using QimiaSchool.Business.Implementations;
 using QimiaSchool.DataAccess.Entities;
 using QimiaSchool.DataAccess.Repositories.Abstractions;
+using Serilog;
 namespace QimiaSchool.Business.UnitTests;
 
 [TestFixture]
@@ -18,6 +19,8 @@ internal class StudentManagerUnitTests
     [Test]
     public async Task CreateStudentAsync_WhenCalled_CallsRepository()
     {
+        Log.Information("Create request accepted by controller.");
+
         // Arrange
         var testStudent = new Student
         {
@@ -37,6 +40,9 @@ internal class StudentManagerUnitTests
     [Test]
     public async Task CreateStudentAsync_WhenStudentIdHasValue_RemovesAndCallsRepository()
     {
+        // Serilog
+        Log.Information("Create request accepted by controller.");
+
         // Arrange
         var testStudent = new Student
         {

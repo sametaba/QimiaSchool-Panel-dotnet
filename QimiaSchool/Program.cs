@@ -11,8 +11,37 @@ using MediatR;
 using QimiaSchool.Business.Abstracts;
 using QimiaSchool.Business.Implementations;
 using QimiaSchool.Business.Implementations.Commands.Students;
+using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
+using Serilog.Sinks.Elasticsearch;
+using Serilog.Sinks.File;
+
+Log.Information("Bu bir test logudur! Serilog -> Elasticsearch - Yeni indeks çalışıyor!");
+Serilog.Debugging.SelfLog.Enable(Console.Out);
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// 🔹 Serilog Logger'ı ayarlayalım
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()  // Daha detaylı log al
+    .Enrich.FromLogContext()
+    .Enrich.WithExceptionDetails()
+    .WriteTo.Console()
+    .WriteTo.File("logs/serilog_debug.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri("http://localhost:9200"))
+    {
+        IndexFormat = "indexdotnetlog",
+        AutoRegisterTemplate = false,
+        MinimumLogEventLevel = LogEventLevel.Debug
+})
+
+
+    .CreateLogger();
+
+
+
 
 // 🔹 Bağımlılıkları ekleyelim
 builder.Services.AddControllers();
