@@ -16,6 +16,8 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using Serilog.Sinks.File;
+using Microsoft.Extensions.Logging;
+using Serilog.Core;
 
 Log.Information("Bu bir test logudur! Serilog -> Elasticsearch - Yeni indeks çalışıyor!");
 Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -34,14 +36,14 @@ Log.Logger = new LoggerConfiguration()
     {
         IndexFormat = "indexdotnetlog",
         AutoRegisterTemplate = false,
-        MinimumLogEventLevel = LogEventLevel.Debug
-})
-
-
+        MinimumLogEventLevel = LogEventLevel.Debug, // Daha detaylı log
+        //FailureCallback = e => Console.WriteLine($"❌ Elasticsearch Hatası: {e.Message}"),
+        //EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog, // Hata olursa kendi loguna yaz
+    })
     .CreateLogger();
 
-
-
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(Log.Logger);
 
 // 🔹 Bağımlılıkları ekleyelim
 builder.Services.AddControllers();
