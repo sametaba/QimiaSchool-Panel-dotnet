@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using QimiaSchool.Business.Implementations.Commands.Students.Dtos;
+using QimiaSchool.Business.Implementations.Queries.Student.Dtos;
 using QimiaSchool.DataAccess.Entities;
 
 namespace QimiaSchool.Business.Implementations.MapperProfiles
@@ -11,8 +12,11 @@ namespace QimiaSchool.Business.Implementations.MapperProfiles
             // DTO -> Entity Mapping
             CreateMap<CreateStudentDto, Student>();
 
-            // Entity -> DTO Mapping (Eğer ihtiyacın varsa)
-            CreateMap<Student, CreateStudentDto>();
+            // Entity -> DTO Mapping
+            CreateMap<Student, StudentDto>();
+
+            // Eğer ters mapping gerekiyorsa:
+            CreateMap<StudentDto, Student>();
         }
     }
 }

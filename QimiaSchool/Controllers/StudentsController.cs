@@ -7,7 +7,11 @@ using QimiaSchool.Business.Implementations.Queries.Student;
 using QimiaSchool.Business.Implementations.Queries.Student.Dtos;
 using static QimiaSchool.Business.Implementations.Queries.Student.GetStudentQuery;
 namespace QimiaSchool.Controllers;
+
+
+
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class StudentsController : Controller
 {

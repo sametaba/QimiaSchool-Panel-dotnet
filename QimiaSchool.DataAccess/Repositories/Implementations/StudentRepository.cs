@@ -28,23 +28,30 @@ public class StudentRepository : RepositoryBase<Student>, IStudentRepository
         throw new NotImplementedException();
     }
 
-    Task<IEnumerable<Student>> IRepositoryBase<Student>.GetAllAsync(CancellationToken cancellationToken)
+    public async Task<Student> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await DbContext.Students.FindAsync(new object[] { id }, cancellationToken);
     }
 
-    Task<IEnumerable<Student>> IRepositoryBase<Student>.GetByConditionAsync(Expression<Func<Student, bool>> expression)
+    public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await DbContext.Students.ToListAsync(cancellationToken);
     }
 
-    Task<Student> IRepositoryBase<Student>.GetByIdAsync(int id, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Student>> GetByConditionAsync(Expression<Func<Student, bool>> expression)
     {
-        throw new NotImplementedException();
+        return await DbContext.Students.Where(expression).ToListAsync();
     }
 
-    Task IRepositoryBase<Student>.UpdateAsync(Student entity, CancellationToken cancellationToken)
+    public async Task UpdateAsync(Student entity, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        DbContext.Students.Update(entity);
+        await DbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(Student entity) // Hata düzeltildi: void yerine Task döndürdük
+    {
+        DbContext.Students.Remove(entity);
+        await DbContext.SaveChangesAsync();
     }
 }
