@@ -23,7 +23,7 @@ public class StudentRepository : RepositoryBase<Student>, IStudentRepository
 
     
 
-    void IRepositoryBase<Student>.DeleteAsync(Student entity)
+    Task IRepositoryBase<Student>.DeleteAsync(Student entity)
     {
         throw new NotImplementedException();
     }

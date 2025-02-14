@@ -50,7 +50,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // Swagger UI için ekledim
 builder.Services.AddScoped<IStudentManager, StudentManager>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateStudentCommand).Assembly));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "SampleInstance";
+});
+builder.Services.AddScoped<ICacheService, CacheService>();
+
 
 // 🔹 Veritabanı bağlantısı
 builder.Services.AddDbContext<QimiaSchoolDbContext>(options =>
