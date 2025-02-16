@@ -27,6 +27,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\QimiaSchool.Business\QimiaSchool.Business.csproj" />
 		<ProjectReference Include="..\QimiaSchool.DataAccess\QimiaSchool.DataAccess.csproj" />
+		
 	</ItemGroup>
 
 </Project>
