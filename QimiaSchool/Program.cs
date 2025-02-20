@@ -18,6 +18,12 @@ using Serilog.Sinks.Elasticsearch;
 using Serilog.Sinks.File;
 using Microsoft.Extensions.Logging;
 using Serilog.Core;
+using Microsoft.Extensions.Options;
+using QimiaSchool.DataAccess.MessageBroker.Implementations;
+using MassTransit;
+using QimiaSchool.Business.Implementations.Events.Courses;
+using QimiaSchool.DataAccess.MessageBroker.Abstractions;
+using QimiaSchool.Business.Implementations.Handlers.Courses;
 
 Log.Information("Bu bir test logudur! Serilog -> Elasticsearch - Yeni indeks çalışıyor!");
 Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -61,6 +67,35 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddScoped<ICacheService, CacheService>();
 
+builder.Services.Configure<MessageBrokerSettings>(
+builder.Configuration.GetSection("MessageBroker"));
+builder.Services.AddSingleton(sp =>
+sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+builder.Services.AddMassTransit(busConfigurator =>
+{
+    busConfigurator.SetKebabCaseEndpointNameFormatter();
+    busConfigurator.AddConsumer<CourseCreatedEventConsumer>();
+    busConfigurator.UsingRabbitMq((context, configurator) =>
+    {
+        MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.UserName);
+            h.Password(settings.Password);
+        });
+        configurator.ConfigureEndpoints(context);
+    });
+});
+
+builder.Services.AddScoped<ICourseManager, CourseManager>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IEventBus, EventBus>();
+
+
+
+
+
+
 
 // 🔹 Veritabanı bağlantısı
 builder.Services.AddDbContext<QimiaSchoolDbContext>(options =>
@@ -71,6 +106,7 @@ builder.Services.AddAutoMapper(typeof(QimiaSchool.Business.Implementations.Mappe
 
 // 🔹 MediatR ekleyelim
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(QimiaSchool.Business.Implementations.Handlers.Students.Queries.GetStudentQueryHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<GetCourseQueryHandler>());
 
 // 🔹 Repository bağımlılıkları
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
@@ -146,3 +182,5 @@ app.UseAuthorization();
 app.MapControllers();
 app.Run();
 public partial class Program { }
+
+

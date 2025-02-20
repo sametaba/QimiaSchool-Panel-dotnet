@@ -1,15 +1,16 @@
-version: '3.1'
+version: '3.8'
+
 services:
-  redis:
-    container_name: redis
-    image: redis:7.0.5
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11.7-management
+    hostname: qimiaschool-queue
     ports:
-      - "6379:6379"
+      - "5672:5672"  # AMQP bağlantı noktası
+      - "15672:15672" # RabbitMQ yönetim paneli
     volumes:
-      - redis_data:/redis/data
-    command: redis-server --appendonly yes
-
-volumes:
-  redis_data:
-
-
+      - ./containers/queue/data/:/var/lib/rabbitmq
+      - ./containers/queue/log/:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: qschool
+      RABBITMQ_DEFAULT_PASS: sa123
