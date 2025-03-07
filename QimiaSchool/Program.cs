@@ -24,6 +24,9 @@ using MassTransit;
 using QimiaSchool.Business.Implementations.Events.Courses;
 using QimiaSchool.DataAccess.MessageBroker.Abstractions;
 using QimiaSchool.Business.Implementations.Handlers.Courses;
+using QimiaSchool.Common;
+using System.Text;
+using QimiaSchool.Business.Middleware;
 
 Log.Information("Bu bir test logudur! Serilog -> Elasticsearch - Yeni indeks çalışıyor!");
 Serilog.Debugging.SelfLog.Enable(Console.Out);
@@ -93,7 +96,28 @@ builder.Services.AddScoped<IEventBus, EventBus>();
 
 
 
-
+builder.Services.Configure<Auth0Configuration>(builder.Configuration.GetSection("Auth0"));
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Auth0:ClientSecret"]));
+    options.Authority = $"{builder.Configuration["Auth0:Domain"]}";
+    options.Audience = builder.Configuration["Auth0:Audience"];
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        NameClaimType = "name",
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = key,
+        ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}",
+        ValidAudience = builder.Configuration["Auth0:Audience"],
+    };
+});
 
 
 
@@ -120,7 +144,7 @@ var auth0Domain = configuration["Auth0:Domain"];
 var auth0Audience = configuration["Auth0:Audience"];
 
 // 🔹 Authentication Middleware
-builder.Services.AddAuthentication(options =>
+/*builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -133,7 +157,7 @@ builder.Services.AddAuthentication(options =>
     {
         NameClaimType = "name"
     };
-});
+});*/
 
 // 🔹 Authorization ekleyelim
 builder.Services.AddAuthorization();
@@ -176,9 +200,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // 🔹 Authentication ve Authorization middleware'leri ekleyelim
+app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMiddleware<TokenRefreshMiddleware>();
 app.MapControllers();
 app.Run();
 public partial class Program { }
